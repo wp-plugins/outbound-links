@@ -2,7 +2,7 @@
 /*
 Plugin Name: Outbound Links
 Plugin URI: http://www.satollo.com/english/wordpress/outbound-links/
-Description: This plugin uses the Google Analytics service to track all the outbound links the visitors click on the blog. it can add a "target black" to such a links.
+Description: This plugin uses the Google Analytics service to track all the outbound links the visitors click on the blog. it can add a "target black" to such a links. For any problem or question write me: satollo@gmail.com.
 Version: 1.0
 Author: Satollo
 Author URI: http://www.satollo.com/english/

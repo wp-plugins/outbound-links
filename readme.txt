@@ -23,6 +23,8 @@ The plugin uses the "old" Google Analytics code, by now (the urchinTracker).
 
 Pay attention, it doesn't track the Google Adsense links! 
 
+For any problem or question write me: satollo@gmail.com.
+
 == Installation ==
 
 Upload the plugin folder into your "wp-content/plugins".
