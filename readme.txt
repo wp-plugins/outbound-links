@@ -19,11 +19,7 @@ links going outside your site.
 It can also force the outbound links open in a new window, without change a
 byte in your theme or posts.
 
-The plugin uses the "old" Google Analytics code, by now (the urchinTracker).
-
-Pay attention, it doesn't track the Google Adsense links! 
-
-For any problem or question write me: satollo@gmail.com.
+More here: http://www.satollo.com/english/wordpress/outbound-links.
 
 == Installation ==
 

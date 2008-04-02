@@ -1,4 +1,16 @@
 <?
+function outl_request($name, $default=null) 
+{
+	if (!isset($_REQUEST[$name])) return $default;
+	if (get_magic_quotes_gpc()) return outl_stripslashes($_REQUEST[$name]);
+	else return $_REQUEST[$name];
+}
+
+function outl_stripslashes($value)
+{
+	$value = is_array($value) ? array_map('outl_stripslashes', $value) : stripslashes($value);
+	return $value;
+}
 function outl_field_text($name, $label='', $tips='', $attrs='')
 {
   global $options;
@@ -24,7 +36,7 @@ function outl_field_checkbox($name, $label='', $tips='', $attrs='')
 
 if (isset($_POST['save']))
 {
-    $options = $_REQUEST['options'];
+    $options = outl_request('options');
     update_option('outl', $options);
 }
 else 
@@ -32,6 +44,13 @@ else
     $options = get_option('outl');
 }
 ?>
+<style type="text/css">
+td.label {
+    width: 150px;
+    text-align: right;
+    font-weight: bold;
+}
+</style>
 <div class="wrap">
 <form method="post">
 
@@ -41,6 +60,8 @@ else
 the visitors click on the blog. It can add a "target blank" to those links
 forcing the opening in a new window.
 </p>
+
+<p>For any problem or suggestion write me: satollo@gmail.com or visit the site <a href="www.satollo.com/english">www.satollo.com/english</a></p>
 
 <h3>Configuration</h3>
 <table>
