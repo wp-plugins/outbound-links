@@ -1,13 +1,12 @@
 === Outbound Links ===
 Tags: include,php,page,post
 Requires at least: 2.1
-Tested up to: 2.5
-Stable tag: 1.0
+Tested up to: 2.8.4
+Stable tag: 1.1.0
 Donate link: http://www.satollo.com/english/donate
-Contributors: none
+Contributors: satollo
 
-This plugin uses the Google Analytics service to track all the outbound links
-the visitors click on the blog.
+Forces all outbund link to open on a new window. Track outbound link clicks with Google Analytics.
 
 == Description ==
 
@@ -19,7 +18,7 @@ links going outside your site.
 It can also force the outbound links open in a new window, without change a
 byte in your theme or posts.
 
-More here: http://www.satollo.com/english/wordpress/outbound-links.
+More here: http://www.satollo.net/plugins/outbound-links.
 
 == Installation ==
 
@@ -28,10 +27,12 @@ Log in to Wordpress Administration area, choose "Plugins" from the main menu, fi
 and click the "Activate" button. 
 Go to the options page and activate the funzionalities you prefer.
 
+== History ==
+
 == Frequently Asked Questions ==
 
 No questions have been asked.
 
 == Screenshots ==
 
-No screenshots are available (they make non sense).
+No screenshots are available.

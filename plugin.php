@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Outbound Links
-Plugin URI: http://www.satollo.com/english/wordpress/outbound-links/
-Description: This plugin uses the Google Analytics service to track all the outbound links the visitors click on the blog. it can add a "target black" to such a links. For any problem or question write me: satollo@gmail.com.
-Version: 1.0
+Plugin URI: http://www.satollo.net/plugins/outbound-links
+Description: Forces all outbund link to open on a new window. Track outbound link clicks with Google Analytics.
+Version: 1.1.0
 Author: Satollo
-Author URI: http://www.satollo.com/english/
+Author URI: http://www.satollo.net
 Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
 */
 
@@ -26,27 +26,48 @@ Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$outl_options = get_option('outl');
-
 add_action('wp_footer', 'outl_wp_footer');
 function outl_wp_footer()
 {
-    global $outl_options;
-    //echo $outl_options['footer'];
-    if ($outl_options['target'] || $outl_options['track'])
+    global $user_ID;
+    
+    $options = get_option('outl');
+
+    if ($user_ID == '' || $options['track_admin'])
     {
-        echo '<script type="text/javascript">' . "\n";
-        echo 'var a=document.getElementsByTagName("a");var d=/^(http|https):\/\/([a-z-.0-9]+)[\/]{0,1}/i.exec(window.location);var il=new RegExp("^(http|https):\/\/"+d[2], "i");for(var i=0; i<a.length; i++) {if (!il.test(a[i].href)) {' .
-            ($outl_options['target']?'a[i].target="_blank";':'') .
-            ($outl_options['track']?'a[i].onclick=function(){urchinTracker("/out/"+this.href.replace(/^http:\/\/|https:\/\//i, "").split("/").join("|"))};':'') .
-            '}}' . "\n";
-        echo '</script>';
+        echo $options['footer'];
+    }
+        
+    if ($options['target'] || $options['track'])
+    {
+        echo "\n" . '<script type="text/javascript">' . "\n<!--\n";
+        echo 'var a=document.getElementsByTagName("a");var d=/^(http|https):\/\/([a-z-.0-9]+)[\/]{0,1}/i.exec(window.location);var il=new RegExp("^(http|https):\/\/"+d[2], "i");for(var i=0; i<a.length; i++) {if (!il.test(a[i].href) && a[i].href.toLowerCase().substring(0, 4) == "http") {' .
+            ($options['target']?'a[i].target="_blank";':'');
+            
+            if ($options['track'] && ($user_ID == '' || $outl_options['track_admin']))
+            {
+                $tracker = $options['track_version']?'urchinTracker':'pageTracker._trackPageview';
+                if ($options['track_prefix'] == '') $outl_options['track_prefix'] = '/out';
+                if ($options['track_mode'])
+                {
+                    echo 'a[i].onclick=function(){' . $tracker . '("' . $options['track_prefix'] . '/"+this.href.replace(/^http:\/\/|https:\/\//i, "").split("/")[0])};';
+                }
+                else 
+                {
+                    echo 'a[i].onclick=function(){' . $tracker . '("' . $options['track_prefix'] . '/"+this.href.replace(/^http:\/\/|https:\/\//i, "").split("/").join("|"))};';
+                }
+            }
+            echo '}}' . "\n";
+        echo "//-->\n</script>\n";
     }
 }
 
-add_action('admin_head', 'outl_admin_head');
-function outl_admin_head()
+if (is_admin())
 {
-    add_options_page('Outbound Links', 'Outbound Links', 'manage_options', 'outbound-links/options.php');
+    add_action('admin_menu', 'outl_admin_menu');
+    function outl_admin_menu()
+    {
+        add_options_page('Outbound Links', 'Outbound Links', 'manage_options', 'outbound-links/options.php');
+    }
 }
 ?>
