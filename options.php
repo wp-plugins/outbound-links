@@ -1,94 +1,191 @@
-<?
+<?php
+$controls = new Controls();
+$plugin = OutboundLinks::$instance;
 
-$options = get_option('outl');
-
-if (isset($_POST['save']))
-{
-    if (!check_admin_referer()) die('No hacking please');
-    $options = stripslashes_deep($_POST['options']);
-    update_option('outl', $options);
+if (!isset($plugin->options['translation_disabled'])) {
+    if (function_exists('load_plugin_textdomain')) {
+        load_plugin_textdomain('outbound-links', false, 'outbound-links/languages');
+    }
 }
 
+if ($controls->is_action('save')) {
+    $controls->options = stripslashes_deep($_POST['options']);
+
+    update_option('outbound-links', $controls->options);
+    $plugin->options = $controls->options;
+    $controls->messages = __('Options saved.', 'outbound-links');
+}
+
+if ($controls->options == null) {
+    $controls->options = get_option('outbound-links');
+}
 ?>
 
 <div class="wrap">
-<form method="post" action="">
-<?php wp_nonce_field(); ?>
-<h2>Outbound Links</h2>
 
-<h3>Target for outbound links</h3>
-<table class="form-table">
-<tr valign="top">
-    <th>Link opening</th>
-    <td>
-        <input type="checkbox" name="options[target]" value="1" <?php echo $options['target']?'checked':''; ?>/>
-        <label for="options[target]">Force all outbound links to open in a new window</label>
-    </td>
-</tr>
-</table>
+    <h2>Outbound Links</h2>
 
-<h3>Outbound links click tracking</h3>
-<p><strong>You need to have Google Analytics code installed (new or old version)!</strong></p>
+    <?php $controls->show(); ?>
 
-<table class="form-table">
-<tr valign="top">
-    <th>Tracking</th>
-    <td>
-        <input type="checkbox" name="options[track]" value="1" <?php echo $options['track']?'checked':''; ?>/>
-        <label for="options[track]">Track all outbound link clicks</label>
-    </td>
-</tr>
-<tr valign="top">
-    <th>Google Analytics version</th>
-    <td>
-        <input type="checkbox" name="options[track_version]" value="1" <?php echo $options['track_version']?'checked':''; ?>/>
-        <label for="options[track_version]">Check if you are using the old Google Analytics code (Urchin)</label>
-    </td>
-</tr>
-<tr valign="top">
-    <th>Tracking prefix</th>
-    <td>
-        <input type="text" name="options[track_prefix]" value="<?php echo htmlspecialchars($options['track_prefix']); ?>"/>
-        <br />
-        The prefix will be added to outbound link. Leave empty for "/out".<br />
-        The prefix is used to search on Google Analytics the outtbound link click statistics:
-        open the "content" statistics and filter the url list with "/out/".
-    </td>
-</tr>
-<tr valign="top">
-    <th>Mode</th>
-    <td>
-        <input type="checkbox" name="options[track_mode]" value="1" <?php echo $options['track_mode']?'checked':''; ?>/>
-        <label for="options[track_mode]">Track only the outbound link domain and not the full url</label>
-    </td>
-</tr>
-</table>
+    <form method="post" action="">
+        <?php $controls->init(); ?>
 
-<h3>Google Analytics code</h3>
-<table class="form-table">
-<tr valign="top">
-    <th><label for="options[footer]">Google Analytics code</label></th>
-    <td>
-        <textarea name="options[footer]" cols="70" wrap="off" rows="5"><?php echo htmlspecialchars($options['footer']); ?></textarea>
-        <br />
-        If you do not have Google analytics code already added to your blog, you can copy
-        it here and it will be injected on the pages. You theme need to have the wp_footer()
-        call (not all themes have it).
-    </td>
-</tr>
-<tr valign="top">
-    <th>Logged in users tracking</th>
-    <td>
-        <input type="checkbox" name="options[track_admin]" value="1" <?php echo $options['track_admin']?'checked':''; ?>/>
-        <label for="options[track_admin]">Track the access of the logged in users</label>
-        <br />
-        If you use this plugin to inject Google analytics code, checking this option
-        you'll enable the tracking of logged in users (like admin).
-    </td>
-</tr>
-</table>
+        <p>
+            Please, refer to the <a href="http://www.satollo.net/plugins/outbound-links" target="_blank">official page</a>
+            and the <a href="http://www.satollo.net/forums/forum/outbound-links" target="_blank">official forum</a> for support.
 
-<p class="submit"><input type="submit" name="save" value="Save"></p>
+            <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5PHGDGNHAYLJ8" target="_blank"><img style="vertical-align: bottom" src="http://www.satollo.net/images/donate.png"></a>
+            Even <b>2$</b> helps! (<a href="http://www.satollo.net/donations" target="_blank">read more</a>)
+        </p>
 
-</form>
+
+        <table class="form-table">
+
+            <tr>
+                <th>Nofollow</th>
+                <td>
+                    <?php $controls->checkbox('nofollow', 'Enable'); ?>
+                    <p class="description">
+                        Force the "nofollow" rel attribute on every link not in the blog domain.
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <th>Open on new window</th>
+                <td>
+                    <?php $controls->checkbox('newwindow', 'Enable'); ?>
+                    <p class="description">
+                        Force the page opening in a new window rel attribute on every link not in the blog domain.
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <th>Disable translations</th>
+                <td>
+                    <?php $controls->checkbox('translation_disabled', 'Disable'); ?>
+                    <p class="description">
+                        <!-- Do not translate that -->
+                        If you want to see this panel with the original labels, you can disable the
+                        tranlsation.
+                    </p>
+                </td>
+            </tr>
+        </table>
+        <p>
+            <?php $controls->button('save', __('Save', 'outbound-links')); ?>
+        </p>
+
+    </form>
 </div>
+
+<?php
+
+class Controls {
+
+    var $options = null;
+    var $errors = null;
+    var $messages = null;
+
+    function is_action($action = null) {
+        if ($action == null)
+            return !empty($_REQUEST['act']);
+        if (empty($_REQUEST['act']))
+            return false;
+        if ($_REQUEST['act'] != $action)
+            return false;
+        if (check_admin_referer('save'))
+            return true;
+        die('Invalid call');
+    }
+
+    function text($name, $size = 20) {
+        if (!isset($this->options[$name]))
+            $this->options[$name] = '';
+        $value = $this->options[$name];
+        if (is_array($value))
+            $value = implode(',', $value);
+        echo '<input name="options[' . $name . ']" type="text" size="' . $size . '" value="';
+        echo htmlspecialchars($value);
+        echo '"/>';
+    }
+
+    function checkbox($name, $label = '') {
+        if (!isset($this->options[$name]))
+            $this->options[$name] = '';
+        $value = $this->options[$name];
+        echo '<label><input class="panel_checkbox" name="options[' . $name . ']" type="checkbox" value="1"';
+        if (!empty($value))
+            echo ' checked';
+        echo '>';
+        echo $label;
+        echo '</label>';
+    }
+
+    function textarea($name) {
+        if (!isset($this->options[$name]))
+            $value = '';
+        else
+            $value = $this->options[$name];
+        if (is_array($value))
+            $value = implode("\n", $value);
+        echo '<textarea name="options[' . $name . ']" style="width: 100%; heigth: 120px;">';
+        echo htmlspecialchars($value);
+        echo '</textarea>';
+    }
+
+    function select($name, $options) {
+        if (!isset($this->options[$name]))
+            $this->options[$name] = '';
+        $value = $this->options[$name];
+
+        echo '<select name="options[' . $name . ']">';
+        foreach ($options as $key => $label) {
+            echo '<option value="' . $key . '"';
+            if ($value == $key)
+                echo ' selected';
+            echo '>' . htmlspecialchars($label) . '&nbsp;&nbsp;</option>';
+        }
+        echo '</select>';
+    }
+
+    function button($action, $label, $message = null) {
+        if ($message == null) {
+            echo '<input class="button-primary" type="submit" value="' . $label . '" onclick="this.form.act.value=\'' . $action . '\'"/>';
+        } else {
+            echo '<input class="button-primary" type="submit" value="' . $label . '" onclick="this.form.act.value=\'' . $action . '\';return confirm(\'' .
+            htmlspecialchars($message) . '\')"/>';
+        }
+    }
+
+    function init() {
+        echo '<script type="text/javascript">
+            jQuery(document).ready(function(){
+                jQuery("textarea").focus(function() {
+                    jQuery(this).css("height", "400px");
+                });
+                jQuery("textarea").blur(function() {
+                    jQuery(this).css("height", "120px");
+                });
+            });
+            </script>
+            ';
+        echo '<input name="act" type="hidden" value=""/>';
+        wp_nonce_field('save');
+    }
+
+    function show() {
+        if (!empty($this->errors)) {
+            echo '<div class="error"><p>';
+            echo $this->errors;
+            echo '</p></div>';
+        }
+
+        if (!empty($this->messages)) {
+            echo '<div class="updated"><p>';
+            echo $this->messages;
+            echo '</p></div>';
+        }
+    }
+
+}
+?>
