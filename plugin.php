@@ -4,7 +4,7 @@
   Plugin Name: Outbound Links
   Plugin URI: http://www.satollo.net/plugins/outbound-links
   Description: Forces all outbund link to open on a new window. Track outbound link clicks with Google Analytics.
-  Version: 2.0.0
+  Version: 2.0.1
   Author: Stefano Lissa
   Author URI: http://www.satollo.net
   Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
@@ -14,6 +14,7 @@ class OutboundLinks {
 
     static $instance;
     var $options;
+    var $white_domains = null;
 
     function __construct() {
         self::$instance = $this;
@@ -94,6 +95,23 @@ class OutboundLinks {
         if (strpos($tag, $_SERVER['HTTP_HOST']) !== false)
             return false;
 
+        if ($this->white_domains === null) {
+            $this->white_domains = array();
+            $list = explode("\n", $this->options['white_domains']);
+            if (!empty($list)) {
+                foreach ($list as &$item) {
+                    $item = strtolower(trim($item));
+                    if (empty($item)) continue;
+                    $this->white_domains[] = $item;
+                }
+            }
+        }
+
+        if (empty($this->white_domains)) return true;
+        foreach ($this->white_domains as &$domain) {
+            if (stripos($tag, $domain) !== false) return false;
+
+        }
         // Check for other domains
 
         return true;

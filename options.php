@@ -51,6 +51,15 @@ if ($controls->options == null) {
                 </td>
             </tr>
             <tr>
+                <th>Follow domains</th>
+                <td>
+                    <?php $controls->textarea('white_domains'); ?>
+                    <p class="description">
+                        One per line. You domain is always whitelisted.
+                    </p>
+                </td>
+            </tr>
+            <tr>
                 <th>Open on new window</th>
                 <td>
                     <?php $controls->checkbox('newwindow', 'Enable'); ?>
